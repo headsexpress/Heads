@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            max-width: 800px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #007BFF;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        input[type="number"], input[type="text"] {
+            width: 80%;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .remove-button {
+            margin-left: 5px;
+            background-color: #dc3545;
+        }
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gerenciador de Produtos</h1>
+
+    <h2>Criar Nova Categoria</h2>
+    <input type="text" id="newCategoryName" placeholder="Nome da Categoria">
+    <button onclick="addCategory()">Adicionar Categoria</button>
+
+    <div id="categoriesContainer"></div>
+
+    <script>
+        function addCategory() {
+            const categoryName = document.getElementById('newCategoryName').value;
+            if (!categoryName) {
+                alert('Por favor, insira um nome para a categoria.');
+                return;
+            }
+
+            const categoryId = `category-${Date.now()}`; // Gera um ID único
+            const categoriesContainer = document.getElementById('categoriesContainer');
+
+            const categoryDiv = document.createElement('div');
+            categoryDiv.id = categoryId;
+            categoryDiv.innerHTML = `
+                <h2>${categoryName} <button class="remove-button" onclick="removeCategory('${categoryId}')">Remover Categoria</button></h2>
+                <table id="${categoryId}-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Preço de Custo</th>
+                            <th>Porcentagem de Lucro (%)</th>
+                            <th>Preço de Venda</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button onclick="addProduct('${categoryId}')">Adicionar Produto</button>
+            `;
+
+            categoriesContainer.appendChild(categoryDiv);
+            document.getElementById('newCategoryName').value = ''; // Limpa o input
+        }
+
+        function removeCategory(categoryId) {
+            const categoryDiv = document.getElementById(categoryId);
+            categoryDiv.parentNode.removeChild(categoryDiv);
+        }
+
+        function addProduct(categoryId) {
+            const table = document.getElementById(`${categoryId}-table`).getElementsByTagName('tbody')[0];
+            const rowCount = table.rows.length;
+            const newRow = table.insertRow(rowCount);
+
+            const productId = `product-${Date.now()}`; // Gera um ID único para o produto
+
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nome do Produto" /></td>
+                <td>R$ <span id="cost${productId}">0.00</span></td>
+                <td><input type="number" id="profit${productId}" value="20" min="0" step="0.1" onchange="updateSellingPrice('${productId}')"></td>
+                <td>R$ <span id="sellingPrice${productId}">0.00</span></td>
+                <td>
+                    <input type="number" id="update${productId}" placeholder="Novo preço de custo" onchange="updateCost('${productId}')"/>
+                    <button class="remove-button" onclick="removeProduct(this)">Remover</button>
+                </td>
+            `;
+        }
+
+        function updateCost(productId) {
+            const newCost = document.getElementById(`update${productId}`).value;
+            if (newCost) {
+                const costValue = parseFloat(newCost).toFixed(2);
+                document.getElementById(`cost${productId}`).innerText = costValue;
+                updateSellingPrice(productId); // Atualiza o preço de venda
+                document.getElementById(`update${productId}`).value = ''; // Limpa o campo de atualização
+            }
+        }
+
+        function updateSellingPrice(productId) {
+            const profitPercentage = parseFloat(document.getElementById(`profit${productId}`).value) / 100;
+            const costValue = parseFloat(document.getElementById(`cost${productId}`).innerText);
+            const sellingPrice = (costValue * (1 + profitPercentage)).toFixed(2);
+            document.getElementById(`sellingPrice${productId}`).innerText = sellingPrice;
+        }
+
+        function removeProduct(button) {
+            const row = button.parentNode.parentNode; // Obtém a linha do botão
+            row.parentNode.removeChild(row); // Remove a linha da tabela
+        }
+    </script>
+
+</body>
+</html>
